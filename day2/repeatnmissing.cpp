@@ -14,27 +14,51 @@ using viter = typename std::vector<T>::iterator;
 #define for_inc(start, stop, var) for (int var = start; var < stop; ++var)
 #define for_dec(start, stop) for (int i = start; i > stop; --i)
 
-pair<int, int> func(vec<int> &nums, int n){
-    long rpt_minus_mis = accumulate(nums.begin(), nums.end(), 0) - (n * (n+1))/2;
-    long sq = accumulate(nums.begin(), nums.end(), 0, 
-    [](long total, long curr){
-        return total + powl(curr, 2);
-    });
-    //OR
-    // long sq=0;
-    // for_each(nums.begin(), nums.end(), 
-    // [&sq](int ele){
-    //     sq += powl(ele, 2);
-    // });
+// mark all non repeatingas -ve
+pair<int, int> funcmark(vec<int> &nums, int n){
+    int m, d;
+    for_inc(0, n, i){
+        int x = abs(nums[i])-1;
+        if(nums[x] < 0){
+            d = x+1;
+        } else {
+            nums[x] *= -1;
+        }
+    }
 
-    long rptsq_minus_missq = sq - (n * (n+1) * (2*n+1))/6;
-    long rpt_plus_mis = rptsq_minus_missq / rpt_minus_mis;
-    long rep = (rpt_plus_mis + rpt_minus_mis) / 2;
-    long mis = rpt_plus_mis - rep;
-
-    return pair<int,int>{rep, mis};
+    for_inc(0, n, i){
+        if(nums[i] > 0){
+            m = i+1;
+        } else {
+            nums[i] = abs(nums[i]);
+        }
+    }
+    return {m, d};
 }
 
+// math trick
+pair<int, int> func(vec<int> &nums, int n){
+    long long int s = 0, sn = 0, sq = 0, sqn = 0;
+    for_inc(0, n, i){
+        s += nums[i];
+        sq += (long long int)nums[i] * (long long int)nums[i];
+    }
+
+    long long int m = (long long int)(n);
+    sn = (m * (m + 1)) / 2;
+    sqn = (m * (m + 1) * (2 * m + 1)) / 6;
+    
+    long long int m_minus_d = sn - s;
+    long long int msq_minus_dsq = sqn - sq;
+    long long int m_plus_d = msq_minus_dsq / m_minus_d;
+
+    int mis = (m_minus_d + m_plus_d) / 2;
+    int dup = (m_plus_d - mis);
+
+    return pair<int,int>{mis, dup};
+}
+
+// xor
 pair<int, int> funcxor(vec<int> &nums, int n){
     int xr = 0;
     for(int i = 0; i < n; ++i){
@@ -68,8 +92,9 @@ pair<int, int> funcxor(vec<int> &nums, int n){
 
 int main(int argv, char **argc){
     vec<int> nums{1,2,3,4,5,5};
-    // func(nums, nums.size());
-    auto &&a = funcxor(nums, nums.size());
+    auto &&a = func(nums, nums.size());
+    // auto &&a = funcxor(nums, nums.size());
+    // auto &&a = funcmark(nums, nums.size());
     cout<<a.first<<" "<<a.second;
     return 0;
 }
